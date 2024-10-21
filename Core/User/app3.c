@@ -2,10 +2,13 @@
 #include "string.h"
 #include "malloc.h"
 #include "lvgl.h"
+#include "ff.h"
+#include "font_show.h"
+#include "font_update.h"
 
 #define scr_get_width() lv_obj_get_width(lv_scr_act())
 #define scr_get_height() lv_obj_get_height(lv_scr_act())
-
+LV_FONT_DECLARE(yahei16)
 
 FRESULT MenuInit(const char *path, lv_obj_t *submenu);
 
@@ -15,20 +18,32 @@ struct MYFILEINFO {
     char *path;
     char *name;
 };
+static lv_style_t label_style;									// ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½
 
 void test() {
 //
-//    lv_obj_t* obj = lv_btn_create(lv_scr_act());
-//    lv_obj_set_size(obj, 300, 300);
-//    lv_obj_center(obj);
-//
-//    lv_obj_t* label = lv_label_create(obj);
-//    lv_obj_set_style_text_font(label, &myFont, 0);
-//    lv_label_set_text(label, "Íâ²¿×ÖÌå²âÊÔ");
-//    lv_obj_center(label);
 
+
+
+//    lv_style_init(&label_style);									// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½
+//    lv_style_set_text_font(&label_style, &myFont);// ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//
+//    lv_obj_t * textlabel = lv_label_create(lv_scr_act());			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ç©
+//    lv_label_set_long_mode(textlabel,LV_LABEL_LONG_WRAP );				// ï¿½ï¿½Ç©ï¿½ï¿½ï¿½ï¿½ï¿½Ý¿ò£¬±ï¿½ï¿½Ö¿Ø¼ï¿½ï¿½ï¿½È£ï¿½ï¿½ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½
+//    lv_obj_set_width(textlabel, 320);									// ï¿½ï¿½ï¿½Ã±ï¿½Ç©ï¿½ï¿½ï¿½
+//    lv_label_set_recolor(textlabel, true);								// Ê¹ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¶ï¿½ï¿½Ö·ï¿½ï¿½ï¿½É«
+//    lv_label_set_text(textlabel, "ï¿½ï¿½ï¿½ï¿½SDï¿½ï¿½ï¿½Ö¿ï¿½Å¶,ï¿½ï¿½ï¿½ï¿½SDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½123abcABC");	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ä±ï¿½
+//    lv_obj_align(textlabel, LV_ALIGN_CENTER, 0, -60);				// ï¿½ï¿½ï¿½ëµ½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
+//    lv_obj_add_style(textlabel, &label_style,LV_PART_MAIN);		// Ó¦ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½
+//    //lv_obj_t * List = lv_list_create(lv_scr_act());
+
+//    lv_obj_t *lb = lv_label_create(lv_scr_act());
+//    lv_obj_set_style_text_font(lb, &yahei16, 0);
+//    lv_label_set_text(lb, "ä½ ");
+//    lv_obj_center(lb);
 
     char path[30] = "0:";
+  //  lv_style_set_text_font(&label_style, &yahei16);
     MainMenu = lv_list_create(lv_scr_act());
     lv_obj_center(MainMenu);
     lv_obj_set_size(MainMenu, scr_get_width(), scr_get_height());
@@ -51,6 +66,7 @@ static void BtnDirEvent_Cb(lv_event_t *e) {
     }
 
 }
+
 static void BtnExitEvent_Cb(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *tgt = lv_event_get_target(e);
@@ -64,20 +80,23 @@ static void BtnExitEvent_Cb(lv_event_t *e) {
     }
 
 }
+
 static void BtnFileEvent_Cb(lv_event_t *e) {
     struct MYFILEINFO *info = (struct MYFILEINFO *) (e->user_data);
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t *tgt = lv_event_get_target(e);
     FIL file;
     FRESULT result;
-    UINT bytes_read=0;
-    char file_content[2048]="";
+    UINT bytes_read = 0;
+    char file_content[2048] = "";
     char text[100];
+
+
     if (code == LV_EVENT_CLICKED) {
         lv_obj_set_style_bg_color(tgt, lv_color_hex(0x47a7f1), LV_STATE_FOCUSED);
         lv_obj_set_style_bg_opa(tgt, 150, LV_STATE_FOCUSED);
         printf("info->path is %s\r\n", info->path);
-        result = f_open(&file,info->path, FA_READ);
+        result = f_open(&file, info->path, FA_READ);
         if (result != FR_OK) {
             printf("open error: %d\r\n", result);
             return;
@@ -90,32 +109,32 @@ static void BtnFileEvent_Cb(lv_event_t *e) {
         lv_obj_add_event_cb(btnexit, BtnExitEvent_Cb, LV_EVENT_CLICKED, win);
         lv_obj_t *cont = lv_win_get_content(win);  /*Content can be aded here*/
 
-        lv_obj_t *temp = NULL;  // È·±£ temp ÔÚ¿ªÊ¼Ê±Îª NULL
-        lv_obj_t *label = lv_label_create(cont);  // ÔÚ¸¸¶ÔÏó cont ÖÐ´´½¨ÐÂ±êÇ©
-        lv_label_set_long_mode(label,LV_LABEL_LONG_WRAP);
+        lv_obj_t *temp = NULL;  // È·ï¿½ï¿½ temp ï¿½Ú¿ï¿½Ê¼Ê±Îª NULL
+        lv_obj_t *label = lv_label_create(cont);  // ï¿½Ú¸ï¿½ï¿½ï¿½ï¿½ï¿½ cont ï¿½Ð´ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ç©
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
 
-        file_content[0] = '\0';  // È·±£ file_content ÔÚ¶ÁÈ¡Ç°ÊÇÒ»¸ö¿Õ×Ö·û´®
+        file_content[0] = '\0';  // È·ï¿½ï¿½ file_content ï¿½Ú¶ï¿½È¡Ç°ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½
 
         do {
-            result = f_read(&file, text, sizeof(text) - 1, &bytes_read);  // Ã¿´Î×î¶à¶ÁÈ¡ 99 ¸ö×Ö½Ú
+            result = f_read(&file, text, sizeof(text) - 1, &bytes_read);  // Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ 99 ï¿½ï¿½ï¿½Ö½ï¿½
             if (result != FR_OK) {
                 printf("read error: %d\r\n", result);
                 break;
             }
 
-            text[bytes_read] = '\0';  // È·±£×Ö·û´®ÒÔ '\0' ½áÎ²
+            text[bytes_read] = '\0';  // È·ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ '\0' ï¿½ï¿½Î²
 
-            // ¼ì²é file_content ÖÐÊÇ·ñÓÐ×ã¹»µÄ¿Õ¼äÀ´×·¼Ó text
+            // ï¿½ï¿½ï¿½ file_content ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ã¹»ï¿½Ä¿Õ¼ï¿½ï¿½ï¿½×·ï¿½ï¿½ text
             if ((strlen(file_content) + bytes_read) < 2048) {
-                strncat(file_content, text, bytes_read);  // Ê¹ÓÃ strncat ·ÀÖ¹Òç³ö
+                strncat(file_content, text, bytes_read);  // Ê¹ï¿½ï¿½ strncat ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½
             } else {
                 printf("Buffer overflow: file content too large.\r\n");
                 break;
             }
 
         } while (bytes_read > 0);
-        lv_label_set_text(label,file_content);
-        printf("file_content is %s\r\n",file_content);
+        lv_label_set_text(label, file_content);
+        printf("file_content is %s\r\n", file_content);
 
 //        win = (lv_obj_t *) mymalloc(SRAMIN, sizeof(lv_obj_t));
 //        btnexit = (lv_obj_t *) mymalloc(SRAMIN, sizeof(lv_obj_t));
@@ -127,38 +146,42 @@ static void BtnFileEvent_Cb(lv_event_t *e) {
     }
 
 }
+
 FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
     FRESULT res;
     DIR dir;
     static FILINFO fno;
     char Filepath[128] = {0};
-    char DirPath[128] = {0}; // Ê¹ÓÃÊý×éÀ´´æ´¢Ä¿Â¼Â·¾¶
-    res = f_opendir(&dir, path); // ´ò¿ªÄ¿Â¼£¬·µ»Ø×´Ì¬ºÍÄ¿Â¼¶ÔÏóµÄÖ¸Õë
+    char DirPath[128] = {0}; // Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢Ä¿Â¼Â·ï¿½ï¿½
+    res = f_opendir(&dir, path); // ï¿½ï¿½Ä¿Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½Ä¿Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
     struct MYFILEINFO *myfileinfo;
     if (res == FR_OK) {
-        if(strcmp(path,"0:")==0)
-        {
+        if (strcmp(path, "0:") == 0) {
             snprintf(DirPath, sizeof(DirPath), "%s/..", path);
-        }
-        else
-        {
+        } else {
             snprintf(DirPath, sizeof(DirPath), "%s..", path);
         }
         lv_obj_t *exitbtn = lv_list_add_btn(submenu, LV_SYMBOL_DIRECTORY, DirPath);
         lv_obj_add_event_cb(exitbtn, BtnExitEvent_Cb, LV_EVENT_CLICKED, submenu);
 
         while (1) {
-            res = f_readdir(&dir, &fno); // ¶ÁÈ¡Ä¿Â¼£¬·µ»Ø×´Ì¬ºÍÎÄ¼þÐÅÏ¢µÄÖ¸Õë
+            res = f_readdir(&dir, &fno); // ï¿½ï¿½È¡Ä¿Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½Ö¸ï¿½ï¿½
             if (res != FR_OK || fno.fname[0] == 0) {
                 printf("f_readdir end!\r\n");
-                break; // Èô´ò¿ªÊ§°Ü»òµ½½áÎ²£¬ÔòÍË³ö
+                break; // ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü»òµ½½ï¿½Î²ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½
             }
 
-            if ((fno.fattrib & AM_DIR) && !(fno.fattrib & AM_SYS)) { // ÊÇÄ¿Â¼
+            if ((fno.fattrib & AM_DIR) && !(fno.fattrib & AM_SYS)) { // ï¿½ï¿½Ä¿Â¼
                 printf(" path:%s, File:%s\r\n", path, fno.fname);
                 snprintf(Filepath, sizeof(Filepath), "%s/%s", path, fno.fname);
                 printf(" DirPath:%s\r\n", Filepath);
                 lv_obj_t *btn = lv_list_add_btn(submenu, LV_SYMBOL_DIRECTORY, fno.fname);
+
+//                lv_obj_t * label = lv_label_create(btn);
+//                lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+//                lv_obj_set_style_text_font(label, &yahei16, 0);
+//                lv_label_set_text(label, fno.fname);
+
                 lv_obj_t *SubMenu = lv_list_create(lv_scr_act());
                 lv_obj_center(SubMenu);
                 lv_obj_set_size(SubMenu, scr_get_width(), scr_get_height());
@@ -167,18 +190,25 @@ FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
 
                 res = MenuInit(Filepath, SubMenu);
                 if (res != FR_OK) {
-                    printf("MenuInit fail! res:%d", res); // ´ò¿ªÊ§°Ü
-                    break; // ÍË³öÑ­»·
+                    printf("MenuInit fail! res:%d", res); // ï¿½ï¿½Ê§ï¿½ï¿½
+                    break; // ï¿½Ë³ï¿½Ñ­ï¿½ï¿½
                 }
-            } else if (!(fno.fattrib & AM_SYS)) { // ÊÇÎÄ¼þ
+            } else if (!(fno.fattrib & AM_SYS)) { // ï¿½ï¿½ï¿½Ä¼ï¿½
                 snprintf(Filepath, sizeof(Filepath), "%s/%s", path, fno.fname);
                 printf(" File:%s/%s\r\n", path, fno.fname);
-                printf("Filepath is %s\r\n",Filepath);
+                printf("Filepath is %s\r\n", Filepath);
                 lv_obj_t *btn = lv_list_add_btn(submenu, LV_SYMBOL_FILE, fno.fname);
-                // ÕâÀï¿ÉÒÔÌí¼ÓÎÄ¼þµÄÊÂ¼þ»Øµ÷
+
+//                lv_obj_t * label = lv_label_create(btn);
+//                lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+//                lv_obj_set_style_text_font(label, &yahei16, 0);
+//                lv_label_set_text(label, fno.fname);
+
+
+                // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½Øµï¿½
                 myfileinfo = (struct MYFILEINFO *) mymalloc(SRAMIN, sizeof(struct MYFILEINFO));
                 if (myfileinfo != NULL) {
-                    // ¸´ÖÆ×Ö·û´®ÄÚÈÝµ½ myfileinfo ÖÐ
+                    // ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½ myfileinfo ï¿½ï¿½
                     myfileinfo->path = (char *) mymalloc(SRAMIN, strlen(Filepath) + 1);
                     myfileinfo->name = (char *) mymalloc(SRAMIN, strlen(fno.fname) + 1);
 
@@ -186,10 +216,10 @@ FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
                         strcpy((char *) myfileinfo->path, Filepath);
                         strcpy((char *) myfileinfo->name, fno.fname);
 
-                        // ´«µÝÖ¸Ïò myfileinfo µÄÖ¸Õë
+                        // ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ myfileinfo ï¿½ï¿½Ö¸ï¿½ï¿½
                         lv_obj_add_event_cb(btn, BtnFileEvent_Cb, LV_EVENT_CLICKED, myfileinfo);
                     } else {
-                        // ´¦ÀíÄÚ´æ·ÖÅäÊ§°ÜµÄÇé¿ö
+                        // ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Üµï¿½ï¿½ï¿½ï¿½
                         myfree(SRAMIN, myfileinfo);
                     }
                     //
@@ -201,7 +231,7 @@ FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
     } else {
         printf(" DIR OPEN FAIL \r\n");
     }
-    f_closedir(&dir); // ¹Ø±ÕÄ¿Â¼
+    f_closedir(&dir); // ï¿½Ø±ï¿½Ä¿Â¼
     printf(" f_closedir end!\r\n");
     return res;
 }
@@ -211,12 +241,12 @@ FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
 //FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
 //    FRESULT res;
 //    DIR dir;
-//    UINT i; //¶¨Òå±äÁ¿
+//    UINT i; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //    static FILINFO fno;
 //    char Filepath[128] = {0};
 //    char *DirPath;
 //    char *temp;
-//    res = f_opendir(&dir, path); //´ò¿ªÄ¿Â¼£¬·µ»Ø×´Ì¬ ºÍ Ä¿Â¼¶ÔÏóµÄÖ¸Õë
+//    res = f_opendir(&dir, path); //ï¿½ï¿½Ä¿Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ ï¿½ï¿½ Ä¿Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½
 //    if (res == FR_OK) {
 //        strcpy(Filepath, path);
 //        DirPath = strcat(Filepath, "/..");
@@ -227,17 +257,17 @@ FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
 
 
 //        while (1) {
-//            res = f_readdir(&dir, &fno); //¶ÁÈ¡Ä¿Â¼£¬·µ»Ø×´Ì¬ ºÍ ÎÄ¼þÐÅÏ¢µÄÖ¸Õë
-//            if (res != FR_OK || fno.fname[0] == 0)//Îªnull¿Õ
+//            res = f_readdir(&dir, &fno); //ï¿½ï¿½È¡Ä¿Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ ï¿½ï¿½ ï¿½Ä¼ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½Ö¸ï¿½ï¿½
+//            if (res != FR_OK || fno.fname[0] == 0)//Îªnullï¿½ï¿½
 //            {
 //                printf("f_readdir end!\r\n");
-//                break;        //Èô´ò¿ªÊ§°Ü »ò µ½½áÎ²£¬ÔòÍË³ö
+//                break;        //ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Î²ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½
 //            }
-//            if ((fno.fattrib & AM_DIR) && !(fno.fattrib & AM_SYS)) //ÊÇÄ¿Â¼
+//            if ((fno.fattrib & AM_DIR) && !(fno.fattrib & AM_SYS)) //ï¿½ï¿½Ä¿Â¼
 //            {
 //                printf(" path:%s,i=%d,File:%s\r\n", path, i, fno.fname);
 //                strcpy(Filepath, path);
-//                if (strcmp("0:/", path) != 0)  // Çø±ð¸ùÄ¿Â¼
+//                if (strcmp("0:/", path) != 0)  // ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Â¼
 //                    DirPath = strcat(Filepath, "/");
 //                DirPath = strcat(Filepath, (const char *) fno.fname);
 //                printf(" DirPath:%s\r\n", DirPath);
@@ -253,14 +283,14 @@ FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
 
 //                res = MenuInit(DirPath, SubMenu);
 //                if (res != FR_OK) {
-//                    printf("MenuInit fail! res:%d", res); //´ò¿ªÊ§°Ü
-//                    break; //ÍË³öÑ­»·
+//                    printf("MenuInit fail! res:%d", res); //ï¿½ï¿½Ê§ï¿½ï¿½
+//                    break; //ï¿½Ë³ï¿½Ñ­ï¿½ï¿½
 //                }
 //            } else if (!(fno.fattrib & AM_SYS)) {
 
 //                struct MYFILEINFO* myfileinfo = (struct MYFILEINFO *) mymalloc(SRAMIN, sizeof(struct MYFILEINFO));
 //                printf("my_mem_perused is %d%%\r\n", my_mem_perused(SRAMIN));
-//                printf(" File:%s/%s\r\n", path, fno.fname); //ÊÇÎÄ¼þ
+//                printf(" File:%s/%s\r\n", path, fno.fname); //ï¿½ï¿½ï¿½Ä¼ï¿½
 //                lv_obj_t *btn = (lv_obj_t *) mymalloc(SRAMIN, sizeof(lv_obj_t));
 //                btn = lv_list_add_btn(submenu, LV_SYMBOL_FILE, fno.fname);
 //                memset(Filepath, 0, sizeof(Filepath) / sizeof(Filepath[0]));
@@ -275,9 +305,9 @@ FRESULT MenuInit(const char *path, lv_obj_t *submenu) {
 //            }
 //        }
 //    } else {
-//        printf(" DIR OPEN FAIL \r\n"); //ÊÇÎÄ¼þ
+//        printf(" DIR OPEN FAIL \r\n"); //ï¿½ï¿½ï¿½Ä¼ï¿½
 //    }
-//    f_closedir(&dir); //¹Ø±ÕÄ¿Â¼
+//    f_closedir(&dir); //ï¿½Ø±ï¿½Ä¿Â¼
 //    printf(" f_closedir end!\r\n");
 //    return res;
 //}

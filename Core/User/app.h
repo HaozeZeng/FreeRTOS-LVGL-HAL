@@ -5,5 +5,5 @@
 #ifndef CPROJECT_APP_H
 #define CPROJECT_APP_H
 void app(void);
-
+void test(void);
 #endif //CPROJECT_APP_H
