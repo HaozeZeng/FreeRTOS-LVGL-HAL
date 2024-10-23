@@ -24,21 +24,37 @@
 #include "usart.h"
 #include "gpio.h"
 #include "fsmc.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "system.h"
 #include "led.h"
+#include "key.h"
 #include "SysTick.h"
+#include "semphr.h"
+#include "task.h"
+#include "malloc.h"
+#include "flash.h"
+#include "font_show.h"
+
+#define USE_LVGL
+#ifdef USE_LVGL
+
 #include "lvgl.h"
 #include "lv_port_disp_template.h"
 #include "lv_port_indev_template.h"
 #include "lv_port_fs_template.h"
+
+#endif
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+extern TickType_t xTaskGetTickCount(void);
 
+uint32_t lvgl_get_tick(void) {
+    return xTaskGetTickCount();
+}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -67,7 +83,6 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern u8 SD_Init_Statue;
 
 /* USER CODE END 0 */
 
@@ -88,7 +103,6 @@ int main(void) {
     HAL_Init();
 
     /* USER CODE BEGIN Init */
-    //必须定义DATA_IN_ExtSRAM 才能正常显示
     /* USER CODE END Init */
 
     /* Configure the system clock */
@@ -107,7 +121,14 @@ int main(void) {
     /* USER CODE BEGIN 2 */
     SysTick_Init(72);
     LED_Init();
-    //初始化EN25Q128
+    KEY_Init();
+    u8 res = font_init();
+
+    if (res != 0) {
+        printf("font init err\r\n");
+    }
+    my_mem_init(SRAMIN);
+    //锟斤拷始锟斤拷EN25Q128
     lv_init();
     lv_port_disp_init();
     lv_port_indev_init();
@@ -134,26 +155,8 @@ int main(void) {
 
         /* USER CODE BEGIN 3 */
     }
+    /* USER CODE END 3 */
 }
-/**
- * @brief       start_task
- * @param       pvParameters : 传入参数(未用到)
- * @retval      无
- */
-
-
-/* Call init function for freertos objects (in cmsis_os2.c) */
-//    MX_FREERTOS_Init();
-//
-//    /* Start scheduler */
-//    osKernelStart();
-//
-//    /* We should never get here as control is now taken by the scheduler */
-
-/* Infinite loop */
-/* USER CODE BEGIN WHILE */
-
-/* USER CODE END 3 */
 
 /**
   * @brief System Clock Configuration

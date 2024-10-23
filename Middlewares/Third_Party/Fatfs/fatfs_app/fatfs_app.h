@@ -4,7 +4,7 @@
 #include "system.h"
 #include "ff.h"
 
-extern FATFS *fs[_VOLUMES];
+extern FATFS *fs[FF_VOLUMES];
 extern FIL *file;
 extern FIL *ftemp;
 extern UINT br, bw;

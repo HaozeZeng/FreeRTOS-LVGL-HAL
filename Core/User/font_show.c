@@ -41,7 +41,11 @@ void Get_HzMat(unsigned char *code,unsigned char *mat,u8 size)
 		case 32:
 			EN25QXX_Read(mat,foffset+ftinfo.f32addr,csize);
 			break;
-			
+		case 20:
+			EN25QXX_Read(mat,foffset+ftinfo.f32addr,csize);
+			break;
+
+
 	}     												    
 }  
 //显示一个指定大小的汉字

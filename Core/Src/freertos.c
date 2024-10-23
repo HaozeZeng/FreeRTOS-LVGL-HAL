@@ -28,6 +28,7 @@
 #include "led.h"
 #include "SysTick.h"
 #include "lvgl.h"
+#include "key.h"
 #include "app.h"
 /* USER CODE END Includes */
 
@@ -38,7 +39,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,19 +56,19 @@ const osThreadAttr_t defaultTask_attributes = {
         .stack_size = 128 * 4,
         .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for LEDToggle */
-osThreadId_t LEDToggleHandle;
-const osThreadAttr_t LEDToggle_attributes = {
-        .name = "LEDToggle",
-        .stack_size = 128 * 4,
-        .priority = (osPriority_t) osPriorityNormal,
+/* Definitions for Led */
+osThreadId_t LedHandle;
+const osThreadAttr_t Led_attributes = {
+        .name = "Led",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t) osPriorityBelowNormal7,
 };
-/* Definitions for Print */
-osThreadId_t PrintHandle;
-const osThreadAttr_t Print_attributes = {
-        .name = "Print",
-        .stack_size = 1000 * 4 ,//
-        .priority = (osPriority_t) osPriorityHigh,
+/* Definitions for LvglTask */
+osThreadId_t LvglTaskHandle;
+const osThreadAttr_t LvglTask_attributes = {
+        .name = "LvglTask",
+        .stack_size = 2048 * 4,
+        .priority = (osPriority_t) osPriorityNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -78,9 +78,9 @@ const osThreadAttr_t Print_attributes = {
 
 void StartDefaultTask(void *argument);
 
-void LEDToggleTask(void *argument);
+void LedTask(void *argument);
 
-void PrintTask(void *argument);
+void LvglCreate(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -113,11 +113,12 @@ void MX_FREERTOS_Init(void) {
     /* Create the thread(s) */
     /* creation of defaultTask */
     defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-    /* creation of LEDToggle */
-    LEDToggleHandle = osThreadNew(LEDToggleTask, NULL, &LEDToggle_attributes);
-    /* creation of Print */
-    PrintHandle = osThreadNew(PrintTask, NULL, &Print_attributes);
-    printf("PrintHandle is %lu\r\n",(uint32_t)PrintHandle);
+
+    /* creation of Led */
+    LedHandle = osThreadNew(LedTask, NULL, &Led_attributes);
+
+    /* creation of LvglTask */
+    LvglTaskHandle = osThreadNew(LvglCreate, NULL, &LvglTask_attributes);
 
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
@@ -139,70 +140,52 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument) {
     /* USER CODE BEGIN StartDefaultTask */
-    /* Infinite loop */
-    u16 i = 0;
     for (;;) {
-//        if (i == 500) {
-//            LED1 = !LED1;
-//        } else if (i > 500) {
-//            i = 0;
-//        }
-//        i++;
         osDelay(1);
     }
     /* USER CODE END StartDefaultTask */
 }
 
-/* USER CODE BEGIN Header_LEDToggleTask */
+/* USER CODE BEGIN Header_LedTask */
 /**
-* @brief Function implementing the LEDToggle thread.
+* @brief Function implementing the Led thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_LEDToggleTask */
-void LEDToggleTask(void *argument) {
-    /* USER CODE BEGIN LEDToggleTask */
-//    /* Infinite loop */
+/* USER CODE END Header_LedTask */
+void LedTask(void *argument) {
+    /* USER CODE BEGIN LedTask */
+    /* Infinite loop */
     for (;;) {
-        LED1 = !LED1;
-      //  printf("PrintTask free stack %lu\r\n", uxTaskGetStackHighWaterMark(PrintHandle));
-        osDelay(pdMS_TO_TICKS(500));
-
+        LED2 = !LED2;
+        printf("KeyTask remain %lu \r\n", uxTaskGetStackHighWaterMark(LvglTaskHandle));
+        printf("LED_Task remain %lu \r\n", uxTaskGetStackHighWaterMark(NULL));
+        osDelay(500);
     }
-    /* USER CODE END LEDToggleTask */
+    /* USER CODE END LedTask */
 }
 
-/* USER CODE BEGIN Header_PrintTask */
+/* USER CODE BEGIN Header_LvglCreate */
 /**
-* @brief Function implementing the Print thread.
+* @brief Function implementing the LvglTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_PrintTask */
-void PrintTask(void *argument) {
-    /* USER CODE BEGIN PrintTask */
+/* USER CODE END Header_LvglCreate */
+void LvglCreate(void *argument) {
+    /* USER CODE BEGIN LvglCreate */
     /* Infinite loop */
-//    uint8_t i = 0;
-//    lv_obj_t *switch_obj = lv_switch_create(lv_scr_act());
-//    lv_obj_set_size(switch_obj, 120, 60);
-//    lv_obj_align(switch_obj, LV_ALIGN_CENTER, 0, 0);
-    app();
-    uint8_t i=0;
+    SDcardFileViewerStart("0:", SanJiBang_16);
     for (;;) {
-
-        if(i==10)
-        {
-            LED2 = !LED2;
-            printf("current PrintTask free stack %lu\r\n", uxTaskGetStackHighWaterMark(PrintHandle));
-        }i++;
+        lv_timer_handler();
         osDelay(pdMS_TO_TICKS(5));
-        lv_timer_handler(); /* LVGL¼ÆÊ±Æ÷ */
     }
-    /* USER CODE END PrintTask */
+    /* USER CODE END LvglCreate */
 }
 
 /* Private application code --------------------------------------------------*/
-/* USER CODE BEGIN Application */
+
+
 
 /* USER CODE END Application */
 

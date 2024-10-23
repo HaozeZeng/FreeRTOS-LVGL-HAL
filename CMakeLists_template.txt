@@ -48,11 +48,36 @@ else ()
     add_compile_options(-Og -g)
 endif ()
 
+file(GLOB APP_SUBDIRS Drivers/APP/*)
+
 include_directories(${includes})
+
+include_directories(
+        Middlewares/Third_Party/Fatfs/fatfs_app
+        Middlewares/Third_Party/Fatfs/src
+        Middlewares/Third_Party/Fatfs
+        Middlewares/Third_Party/lvgl
+        Middlewares/Third_Party
+        Drivers/Public
+        Core/User
+        ${APP_SUBDIRS}
+)
+
 
 add_definitions(${defines})
 
 file(GLOB_RECURSE SOURCES ${sources})
+
+file(GLOB_RECURSE SOURCES
+        "Core/*.*"
+        "Drivers/APP/*.*"
+        "Drivers/STM32F1xx_HAL_Driver/*.*"
+        "Drivers/CMSIS/*.*"
+        "Drivers/Public/*.*"
+        "Middlewares/Third_Party/Fatfs/*.*"
+        "Middlewares/Third_Party/lvgl/src/*.*"
+        "Middlewares/Third_Party/FreeRTOS/Source/*.*"
+        )
 
 set(LINKER_SCRIPT $${CMAKE_SOURCE_DIR}/${linkerScript})
 
@@ -77,23 +102,4 @@ add_definitions(-DDATA_IN_ExtSRAM)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
-file(GLOB_RECURSE SOURCES
-        "Core/*.*"
-        "Drivers/APP/*.*"
-        "Drivers/STM32F1xx_HAL_Driver/*.*"
-        "Drivers/CMSIS/*.*"
-        "Drivers/Public/*.*"
-        "Middlewares/Third_Party/Fatfs/*.*"
-        "Middlewares/Third_Party/lvgl/src/*.*"
-        "Middlewares/Third_Party/FreeRTOS/Source/*.*"
-        )
 
-include_directories(
-        Middlewares/Third_Party/Fatfs/fatfs_app
-        Middlewares/Third_Party/Fatfs/src
-        Middlewares/Third_Party/Fatfs
-        Middlewares/Third_Party/lvgl
-        Middlewares/Third_Party
-        Core/User
-
-)

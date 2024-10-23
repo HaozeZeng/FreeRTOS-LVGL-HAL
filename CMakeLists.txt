@@ -49,36 +49,25 @@ else ()
     add_compile_options(-Og -g)
 endif ()
 
-include_directories(Core/Inc
-        Drivers/STM32F1xx_HAL_Driver/Inc
-        Drivers/STM32F1xx_HAL_Driver/Inc/Legacy
-        Drivers/CMSIS/Device/ST/STM32F1xx/Include
-        Drivers/CMSIS/Include Middlewares/Third_Party/FreeRTOS/Source/include
-        Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3
-        Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
-        Drivers/APP
-        Drivers/APP/tftlcd
-        Drivers/APP/sram
-        Drivers/APP/touch
-        Drivers/APP/led
-        Drivers/APP/iic
-        Drivers/APP/24Cxx
-        Drivers/APP/key
-        Drivers/APP/flash
-        Drivers/APP/sd
-        Drivers/Public
-        )
+file(GLOB APP_SUBDIRS Drivers/APP/*)
+
+include_directories(Core/Inc Drivers/STM32F1xx_HAL_Driver/Inc Drivers/STM32F1xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include Middlewares/Third_Party/FreeRTOS/Source/include Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2)
+
 include_directories(
         Middlewares/Third_Party/Fatfs/fatfs_app
-        Middlewares/Third_Party/Fatfs/src
+        Middlewares/Third_Party/Fatfs/src/ff15
         Middlewares/Third_Party/Fatfs
         Middlewares/Third_Party/lvgl
         Middlewares/Third_Party
+        Drivers/Public
         Core/User
-
+        ${APP_SUBDIRS}
 )
 
+
 add_definitions(-DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xE)
+
+file(GLOB_RECURSE SOURCES "Core/*.*" "Middlewares/*.*" "Drivers/*.*")
 
 file(GLOB_RECURSE SOURCES
         "Core/*.*"
@@ -90,7 +79,8 @@ file(GLOB_RECURSE SOURCES
         "Middlewares/Third_Party/lvgl/src/*.*"
         "Middlewares/Third_Party/FreeRTOS/Source/*.*"
         )
-set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F103ZETX_FLASH.ld )
+
+set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F103ZETX_FLASH.ld)
 
 add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 add_link_options(-mcpu=cortex-m3 -mthumb -mthumb-interwork)
@@ -112,7 +102,5 @@ add_definitions(-DLV_CONF_INCLUDE_SIMPLE)
 add_definitions(-DDATA_IN_ExtSRAM)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
-
-
 
 

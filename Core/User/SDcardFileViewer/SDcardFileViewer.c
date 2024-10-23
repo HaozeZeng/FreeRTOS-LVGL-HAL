@@ -99,13 +99,13 @@ static void BtnFileEvent_Cb(lv_event_t *e) {
             LV_LOG_WARN("open error: %d", result);
             return;
         }
-        lv_obj_t *DispWindow = lv_win_create(lv_scr_act());
+        lv_obj_t *DispWindow = lv_win_create(lv_scr_act(),40);
         lv_obj_center(DispWindow);
         lv_obj_set_size(DispWindow, scr_get_width(), scr_get_height());
         lv_obj_t *title = lv_win_add_title(DispWindow, FileDscInfo->FileName);
         lv_obj_add_style(title, &font_style, 0);
 
-        lv_obj_t *WindowExitBtn = lv_win_add_button(DispWindow, LV_SYMBOL_CLOSE, 60);
+        lv_obj_t *WindowExitBtn = lv_win_add_btn(DispWindow, LV_SYMBOL_CLOSE, 60);
         lv_obj_add_event_cb(WindowExitBtn, BtnExitEvent_Cb, LV_EVENT_CLICKED, DispWindow);
 
         lv_obj_t *WindowDispContent = lv_win_get_content(DispWindow);

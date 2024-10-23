@@ -18,7 +18,7 @@ u8*const FILE_TYPE_TBL[FILE_MAX_TYPE_NUM][FILE_MAX_SUBT_NUM]=
 {"BMP","JPG","JPEG","GIF"},//图片文件 
 };
 ///////////////////////////////公共文件区,使用malloc的时候////////////////////////////////////////////
-FATFS *fs[_VOLUMES];//逻辑磁盘工作区.	 
+FATFS *fs[FF_VOLUMES];//逻辑磁盘工作区.
 FIL *file;	  		//文件1
 FIL *ftemp;	  		//文件2.
 UINT br,bw;			//读写变量
@@ -34,7 +34,7 @@ u8 FATFS_Init(void)
 {
 	u8 i=0;
 	u8 remained=0;
-	for(i=0;i<_VOLUMES;i++)
+	for(i=0;i<FF_VOLUMES;i++)
 	{
 		remained = 100-my_mem_perused(SRAMIN);
 		printf("FATFS%d need RAM %d\r\n",i,sizeof(FATFS));
@@ -57,7 +57,7 @@ u8 FATFS_Init(void)
 	remained = 100-my_mem_perused(SRAMIN);
 
 	printf("after init remain %d\r\n",remained);
-	if(i==_VOLUMES&&file&&ftemp&&fatbuf)return 0;  //申请有一个失败,即失败.
+	if(i==FF_VOLUMES&&file&&ftemp&&fatbuf)return 0;  //申请有一个失败,即失败.
 	else return 1;	
 }
 
@@ -126,8 +126,8 @@ u8 fatfs_getfree(u8 *drv,u32 *total,u32 *free)
 	{											   
 	    tot_sect=(fs1->n_fatent-2)*fs1->csize;	//得到总扇区数
 	    fre_sect=fre_clust*fs1->csize;			//得到空闲扇区数	   
-#if _MAX_SS!=512				  				//扇区大小不是512字节,则转换为512字节
-		tot_sect*=fs1->ssize/512;
+#if FF_MAX_SS!=512				  				//扇区大小不是512字节,则转换为512字节
+		tot_sect*=fs1->csize;
 		fre_sect*=fs1->ssize/512;
 #endif	  
 		*total=tot_sect>>1;	//单位为KB
