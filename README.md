@@ -1,4 +1,4 @@
-# FreeRTOS-LVGL-HAL
+# SDcardFileViewer LVGLv8版
 
 完成基于STMCubeMX 的Fatfs LVGL FreeRTOS 的移植并能运行
 
